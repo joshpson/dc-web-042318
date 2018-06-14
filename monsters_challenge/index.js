@@ -1,19 +1,8 @@
-console.log("Index.js is loaded");
+//Global Variables
 
 let monsterApiPage = 1;
 
-function getMonstersUl() {
-  return document.querySelector(".monsters-ul");
-}
-
-function setCharacterFormListener() {
-  document
-    .querySelector(".character-form")
-    .addEventListener("submit", function(e) {
-      e.preventDefault();
-      createMonster();
-    });
-}
+//Event Listeners
 
 function setNewMonsterButtonListener() {
   document
@@ -24,6 +13,17 @@ function setNewMonsterButtonListener() {
     });
 }
 
+function setCharacterFormListener() {
+  document
+    .querySelector(".character-form")
+    .addEventListener("submit", function(e) {
+      e.preventDefault();
+      createNewMonster();
+    });
+}
+
+//Monster Form
+
 function getMonsterData() {
   let name = document.querySelector("#monster-name").value;
   let age = document.querySelector("#monster-age").value;
@@ -31,10 +31,54 @@ function getMonsterData() {
   return { name: name, age: age, description: description };
 }
 
-function clearMonsterForm() {
-  document.querySelector("#monster-name").value = "";
-  document.querySelector("#monster-age").value = "";
-  document.querySelector("#monster-description").value = "";
+function clearMonsterData() {
+  document.querySelector(".character-form").reset();
+}
+
+//Monster Creation & Appending
+
+function getMonstersUl() {
+  return document.querySelector(".monsters-ul");
+}
+
+function appendMonster(monster) {
+  console.log(monster.name, monster.id);
+  let li = createMonsterLi(monster);
+  getMonstersUl().appendChild(li);
+}
+
+function loadMonsters(monsterApiPage) {
+  getFiftyMonster(monsterApiPage).then(monstersArray =>
+    monstersArray.forEach(monster => {
+      appendMonster(monster);
+    })
+  );
+}
+
+function createNewMonster() {
+  let monster = getMonsterData();
+  postMonster(monster);
+  clearMonsterData();
+}
+
+function createMonsterLi(monster) {
+  let li = document.createElement("li");
+  li.setAttribute("class", "monster-list-item");
+  li.innerHTML = `<strong>${monster.name}</strong><br>
+                Age: ${monster.age}<br>
+                Description: ${monster.description}<br><br>`;
+  li.addEventListener("click", function() {
+    alert(`I'm a scary monster named ${monster.name}`);
+  });
+  return li;
+}
+
+//Fetching Data
+
+function getFiftyMonster(monsterApiPage) {
+  return fetch(
+    `http://localhost:3000/monsters?_limit=50&_page=${monsterApiPage}`
+  ).then(response => response.json());
 }
 
 function postMonster(data) {
@@ -50,45 +94,13 @@ function postMonster(data) {
     .then(monster => appendMonster(monster));
 }
 
-function createMonster() {
-  let monster = getMonsterData();
-  postMonster(monster);
-  clearMonsterForm();
-}
+//Initialize
 
-function createMonsterLi(monster) {
-  let li = document.createElement("li");
-  li.setAttribute("class", "monster-list-item");
-  li.innerHTML = `<strong>${monster.name}</strong><br>
-                Age: ${monster.age}<br>
-                Description: ${monster.description}<br><br>`;
-  return li;
-}
-
-function appendMonster(monster) {
-  console.log(monster.name, monster.id);
-  let li = createMonsterLi(monster);
-  getMonstersUl().appendChild(li);
-}
-
-function fetchFiftyMonsters(monsterApiPage) {
-  //returns 10 monsters
-  return fetch(
-    `http://localhost:3000/monsters?_limit=50&_page=${monsterApiPage}`
-  ).then(response => response.json());
-}
-
-function loadMonsters(monsterApiPage) {
-  fetchFiftyMonsters(monsterApiPage).then(monstersArray =>
-    monstersArray.forEach(monster => {
-      appendMonster(monster);
-    })
-  );
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("dom loaded!");
+function initialize() {
+  console.log("dom loaded in index.js");
   loadMonsters(1);
   setCharacterFormListener();
   setNewMonsterButtonListener();
-});
+}
+
+document.addEventListener("DOMContentLoaded", initialize);
